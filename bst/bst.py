@@ -1,10 +1,13 @@
 class BSTnode(object):
     """
 Representation of a node in a binary search tree.
-Has a left child, right child, and key value.
+Has a left child, right child, parent, and key value.
 """
     def __init__(self, t):
         self.key = t
+        self.left = None
+        self.right = None
+        self.parent = None
         self.disconnect()
     def disconnect(self):
         self.left = None
@@ -24,7 +27,9 @@ and a pointer to the root.
         self.root = None
 
     def insert(self, t):
-        """Insert key t into this BST, modifying it in-place."""
+        """
+        Insert key t into this BST, modifying it in-place. O(h)
+        """
         new = BSTnode(t)
         if self.root is None:
             self.root = new
@@ -32,14 +37,12 @@ and a pointer to the root.
             node = self.root
             while True:
                 if t < node.key:
-                    # Go left
                     if node.left is None:
                         node.left = new
                         new.parent = node
                         break
                     node = node.left
                 else:
-                    # Go right
                     if node.right is None:
                         node.right = new
                         new.parent = node
@@ -48,7 +51,9 @@ and a pointer to the root.
         return new
 
     def find(self, t):
-        """Return the node for key t if is in the tree, or None otherwise."""
+        """
+        Return the node for key t if is in the tree, or None otherwise. O(h)
+        """
         node = self.root
         while node is not None:
             if t == node.key:
@@ -60,18 +65,19 @@ and a pointer to the root.
         return None
 
     def delete_min(self):
-        """Delete the minimum key (and return the old node containing it)."""
+        """
+        Delete the minimum key (and return the old node containing it).
+        """
         if self.root is None:
-            return None, None
+            return None
         else:
-            # Walk to leftmost node.
             node = self.root
             while node.left is not None:
                 node = node.left
-            # Remove that node and promote its right subtree.
+            # remove that node and replace it with the right node
             if node.parent is not None:
                 node.parent.left = node.right
-            else: # The root was smallest.
+            else: # if the node is the root node
                 self.root = node.right
             if node.right is not None:
                 node.right.parent = node.parent
@@ -79,4 +85,4 @@ and a pointer to the root.
             node.disconnect()
             return node, parent
 
-if __name__ == '__main__': test()
+# if __name__ == '__main__': 

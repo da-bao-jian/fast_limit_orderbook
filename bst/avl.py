@@ -1,20 +1,23 @@
 import bst
 
-def height(node):
+def _height(node):
     if node is None:
         return -1
     else:
-        return node.height
+        return node._height
 
-def update_height(node):
-    node.height = max(height(node.left), height(node.right)) + 1
+def _update_height(node):
+    node._height = max(_height(node.left), _height(node.right)) + 1
 
 class AVL(bst.BST):
     """
-AVL binary search tree implementation.
-Supports insert, find, and delete-min operations in O(lg n) time.
-"""
-    def left_rotate(self, x):
+    AVL binary search tree.
+    Insert, find, and delete-min operations in O(log N) time.
+    """
+    def _left_rotate(self, x):
+        '''
+        Reference: Introduction to Algorithms Chapter 13.2
+        '''
         y = x.right
         y.parent = x.parent
         if y.parent is None:
@@ -29,10 +32,13 @@ Supports insert, find, and delete-min operations in O(lg n) time.
             x.right.parent = x
         y.left = x
         x.parent = y
-        update_height(x)
-        update_height(y)
+        _update_height(x)
+        _update_height(y)
 
-    def right_rotate(self, x):
+    def _right_rotate(self, x):
+        '''
+        Reference: Introduction to Algorithms, Chapter 13.2
+        '''
         y = x.left
         y.parent = x.parent
         if y.parent is None:
@@ -47,8 +53,8 @@ Supports insert, find, and delete-min operations in O(lg n) time.
             x.left.parent = x
         y.right = x
         x.parent = y
-        update_height(x)
-        update_height(y)
+        _update_height(x)
+        _update_height(y)
 
     def insert(self, t):
         """Insert key t into this tree, modifying it in-place."""
@@ -57,27 +63,22 @@ Supports insert, find, and delete-min operations in O(lg n) time.
 
     def rebalance(self, node):
         while node is not None:
-            update_height(node)
-            if height(node.left) >= 2 + height(node.right):
-                if height(node.left.left) >= height(node.left.right):
-                    self.right_rotate(node)
+            _update_height(node)
+            if _height(node.left) >= 2 + _height(node.right):
+                if _height(node.left.left) >= _height(node.left.right):
+                    self._right_rotate(node)
                 else:
-                    self.left_rotate(node.left)
-                    self.right_rotate(node)
-            elif height(node.right) >= 2 + height(node.left):
-                if height(node.right.right) >= height(node.right.left):
-                    self.left_rotate(node)
+                    self._left_rotate(node.left)
+                    self._right_rotate(node)
+            elif _height(node.right) >= 2 + _height(node.left):
+                if _height(node.right.right) >= _height(node.right.left):
+                    self._left_rotate(node)
                 else:
-                    self.right_rotate(node.right)
-                    self.left_rotate(node)
+                    self._right_rotate(node.right)
+                    self._left_rotate(node)
             node = node.parent
 
     def delete_min(self):
         node, parent = bst.BST.delete_min(self)
         self.rebalance(parent)
-        #raise NotImplemented('AVL.delete_min')
 
-def test(args=None):
-    bst.test(args, BSTtype=AVL)
-
-if __name__ == '__main__': test()

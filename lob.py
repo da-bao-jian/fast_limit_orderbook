@@ -204,7 +204,7 @@ class LimitOrderBook:
 
         # Remove order from its doubly linked list
         popped_item.pop_from_list()
-
+        
         # Remove Limit Level from self._price_levels and tree, if no orders are
         # left within that limit level
         try:

@@ -1,9 +1,19 @@
 from util import logger
 
-class ExchangeLoop():
+class ExchangeLoops():
+    '''
+    This class initiates event loops and handles feeds
+    '''
     def __init__(self):
-        '''
-        This class handles event loops for exchanges' feeds
-        '''
-        self.feeds = []
+        self.loops = []
         
+    def add_loop(self) -> None:
+        return
+    
+    def start_loops(self) -> None:
+        return
+    
+    def stop_loops(self) -> None:
+        return 
+
+     

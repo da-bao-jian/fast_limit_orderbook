@@ -1,4 +1,4 @@
-from util import logger
+from ..util import logger
 import asyncio
 import uvloop
 

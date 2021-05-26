@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 pytest = "*"
 uvloop = "*"
+aiohttp = "*"
+numpy = "*"
 
 [dev-packages]
 

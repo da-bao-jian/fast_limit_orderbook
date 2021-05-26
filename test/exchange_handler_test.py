@@ -14,3 +14,6 @@ def test_add_loop():
     exchange_loop.add_loop(feed_instance)
     assert len(exchange_loop.loop) == 2 
 
+def test_feed_connection():
+    feed = Feed('')
+    feed

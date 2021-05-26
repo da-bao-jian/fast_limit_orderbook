@@ -1,17 +1,18 @@
 '''
-based on cryptofeed https://github.com/bmoscon/cryptofeed
+based on cryptofeed https://github.com/bmoscon/cryptofeed/feed.py
 '''
 from .logger import custom_logger
 import asyncio
+from .defines import (FTX, BYBIT, COINBASE)
 import uvloop
 from .exchanges.bybit import Bybit
 from .exchanges.coinbase import Coinbase
 from .exchanges.ftx import FTX
 
 mapping = {
-    'FTX':FTX,
-    'BYBIT':Bybit,
-    'COINBASE':Coinbase,
+    FTX:FTX,
+    BYBIT:Bybit,
+    COINBASE:Coinbase,
 }
 
 class ExchangeLoops:

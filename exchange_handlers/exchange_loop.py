@@ -1,7 +1,7 @@
 '''
 based on cryptofeed https://github.com/bmoscon/cryptofeed
 '''
-from ..util.logger import custom_logger
+from .logger import custom_logger
 import asyncio
 import uvloop
 

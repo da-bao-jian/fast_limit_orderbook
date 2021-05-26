@@ -3,6 +3,7 @@ based on cryptofeed https://github.com/bmoscon/cryptofeed
 '''
 from collections import defaultdict
 from typing import Union
+from .defines import (FUNDING, L2_BOOK, L3_BOOK, OPEN_INTEREST)
 class Feed:
     '''
     This is the parent class for individual exchanges
@@ -22,9 +23,8 @@ class Feed:
         '''
         self.subscriptions = defaultdict(set) 
         self.callbacks = {
-            'funding': Callback(None),
-            'callback': Callback(None),
-            'l2': Callback(None),
-            'level3': Callback(None),
-            ''
+            FUNDING: Callback(None),
+            L2_BOOK: Callback(None),
+            L3_BOOK: Callback(None),
+            OPEN_INTEREST: Callback(None)
         }

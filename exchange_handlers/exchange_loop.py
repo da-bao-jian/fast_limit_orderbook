@@ -25,12 +25,14 @@ class ExchangeLoops:
     def add_loop(self, feed):
         '''
         Add the exchange feed to the event loop
-        feed: Feeds class instance 
-            the exchange feed
+        feed: str 
+            all capital letters i.e. FTX, BYBIT
         '''
         if isinstance(feed, str):
-            self.loops.append((mapping[feed](**kwargs)))
-        return
+            if feed in mapping:
+                self.loops.append((mapping[feed]()))
+        else:
+            raise ValueError("Invalid feed")
     
     def start_loops(self):
         return

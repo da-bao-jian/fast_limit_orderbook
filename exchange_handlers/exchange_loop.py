@@ -4,6 +4,15 @@ based on cryptofeed https://github.com/bmoscon/cryptofeed
 from .logger import custom_logger
 import asyncio
 import uvloop
+from .exchanges.bybit import Bybit
+from .exchanges.coinbase import Coinbase
+from .exchanges.ftx import FTX
+
+mapping = {
+    'FTX':FTX,
+    'BYBIT':Bybit,
+    'COINBASE':Coinbase,
+}
 
 class ExchangeLoops:
     '''
@@ -20,7 +29,7 @@ class ExchangeLoops:
             the exchange feed
         '''
         if isinstance(feed, str):
-            self.loops.append(())
+            self.loops.append((mapping[feed](**kwargs)))
         return
     
     def start_loops(self):

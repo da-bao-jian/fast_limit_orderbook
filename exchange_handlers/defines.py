@@ -1,5 +1,5 @@
 '''
-based on cryptofeed https://github.com/bmoscon/cryptofeed
+copied from cryptofeed https://github.com/bmoscon/cryptofeed
 '''
 BITFINEX = 'BITFINEX'
 BITMEX = 'BITMEX'

@@ -23,8 +23,8 @@ class Feed:
         '''
         self.subscriptions = defaultdict(set) 
         self.callbacks = {
-            FUNDING: Callback(None),
-            L2_BOOK: Callback(None),
-            L3_BOOK: Callback(None),
-            OPEN_INTEREST: Callback(None)
+            FUNDING: None,
+            L2_BOOK: None,
+            L3_BOOK: None,
+            OPEN_INTEREST: None
         }

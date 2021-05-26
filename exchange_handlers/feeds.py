@@ -22,7 +22,7 @@ class Feed:
             channel subscribed
         '''
         self.subscriptions = defaultdict(set) 
-        # multi-channel subscription
+        # multi-channel subscription for symbols
         self.subscriptions = {chan: symbol for chan in channel}
         self.callbacks = {
             FUNDING: None,
@@ -31,9 +31,10 @@ class Feed:
             OPEN_INTEREST: None
         }
 
-    def start_connection(self):
+    def start_connection(self, loop):
         '''
-        Setup ws connection using self.address
-        Create tasks in main event loop
+        loop: Asyncio object
+            Setup ws connection using self.address
+            Create tasks in main event loop
         '''
 

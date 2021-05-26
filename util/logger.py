@@ -1,7 +1,7 @@
 import logging, logging.handlers
 
 
-def _custom_logger(name, filename, level=logging.INFO):
+def custom_logger(name, filename, level=logging.INFO):
     logger = logging.getLogger(name)
     logger.setLevel(level)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)04d - %(message)s')

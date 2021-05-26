@@ -1,4 +1,7 @@
-from ..util import logger
+'''
+based on cryptofeed https://github.com/bmoscon/cryptofeed
+'''
+from ..util.logger import custom_logger
 import asyncio
 import uvloop
 
@@ -10,13 +13,20 @@ class ExchangeLoops:
         self.loops = []
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         
-    def add_loop(self) -> None:
+    def add_loop(self, feed):
+        '''
+        Add the exchange feed to the event loop
+        feed: Feeds class instance 
+            the exchange feed
+        '''
+        if isinstance(feed, str):
+            self.loops.append(())
         return
     
-    def start_loops(self) -> None:
+    def start_loops(self):
         return
     
-    def stop_loops(self) -> None:
+    def stop_loops(self):
         return 
 
      

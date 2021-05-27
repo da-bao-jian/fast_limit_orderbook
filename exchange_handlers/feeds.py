@@ -5,11 +5,12 @@ from collections import defaultdict
 from typing import Union
 from .defines import (FUNDING, L2_BOOK, L3_BOOK, OPEN_INTEREST)
 from .connection import WSAsyncConn
+from .connection_handler import ConnectionHandler
 class Feed:
     '''
     This is the parent class for individual exchanges
     '''
-    def __init__(self, address: Union[dict, str], symbol: str, callbacks: dict, channel: str, token: str= 'USD', subscription: str=None):
+    def __init__(self, address: Union[dict, str], symbol: str, callbacks: dict, channel: str, token: str= 'USD', subscription: str=None, retries: int = 10):
         '''
         address: dict or str
             dict for multiple addresses  
@@ -27,7 +28,9 @@ class Feed:
         # multi-channel subscription for symbols
         self.subscriptions = {chan: symbol for chan in channel}
         # ping_pong is used as websockets.connect argument in WSAsyncConn class
+        self.connections = []
         self.ping_pong = {'ping_interval': 10, 'ping_timeout': None, 'max_size': 2**23, 'max_queue': None}
+        self.retries = retries
         self.callbacks = {
             FUNDING: None,
             L2_BOOK: None,
@@ -52,3 +55,7 @@ class Feed:
             ws_array = []
             for _, addr in self.address.items():
                 ws_array.append((WSAsyncConn(self.address, self.id, **self.ping_pong), self.subscribe, self.message_handler))
+        
+        for conn, sub, handler in ws_array:
+            self.connection.append(ConnectionHandler(conn, sub, handler, self.retries))
+

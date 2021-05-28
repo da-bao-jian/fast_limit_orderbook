@@ -1,5 +1,5 @@
 '''
-Copied from cryptofeed https://github.com/bmoscon/cryptofeed/connection.py
+copied from cryptofeed https://github.com/bmoscon/cryptofeed/connection.py
 '''
 import logging
 from typing import Union
@@ -36,6 +36,7 @@ class AsyncConnection(Connection):
         self.received: int = 0
         self.sent: int = 0
         self.last_message = None
+        # websocket client for ws connection, http for http connection
         self.conn: Union[websockets.WebSocketClientProtocol, aiohttp.ClientSession] = None
 
     @property
@@ -63,6 +64,54 @@ class AsyncConnection(Connection):
             self.conn = None
             await conn.close()
             LOG.info('%s: closed connection %r', self.id, conn.__class__.__name__)
+
+class HTTPAsyncConn(AsyncConnection):
+    def __init__(self, conn_id: str):
+        """
+        conn_id: str
+            id associated with the connection
+        """
+        super().__init__(f'{conn_id}.http.{self.conn_count}')
+
+    @property
+    def is_open(self) -> bool:
+        return self.conn and not self.conn.closed
+
+    async def _open(self):
+        if self.is_open:
+            LOG.warning('%s: HTTP session already created', self.id)
+        else:
+            LOG.debug('%s: create HTTP session', self.id)
+            self.conn = aiohttp.ClientSession()
+            self.sent = 0
+            self.received = 0
+
+    async def read(self, address: str) -> bytes:
+        if not self.is_open:
+            await self._open()
+
+        LOG.debug("%s: requesting data from %s", self.id, address)
+        async with self.conn.get(address) as response:
+            data = await response.text()
+            self.last_message = time.time()
+            self.received += 1
+            if self.raw_data_callback:
+                await self.raw_data_callback(data, self.last_message, self.id, endpoint=address)
+            response.raise_for_status()
+            return data
+
+    async def write(self, address: str, msg: str, header=None):
+        if not self.is_open:
+            await self._open()
+
+        async with self.conn.post(address, data=msg, headers=header) as response:
+            self.sent += 1
+            data = await response.read()
+            if self.raw_data_callback:
+                await self.raw_data_callback(data, time.time(), self.id, send=address)
+            response.raise_for_status()
+            return data
+
 
 class WSAsyncConn(AsyncConnection):
     

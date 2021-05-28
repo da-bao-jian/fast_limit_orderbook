@@ -1,11 +1,14 @@
 '''
 based on cryptofeed https://github.com/bmoscon/cryptofeed/feed.py
 '''
+from .connection import HTTPAsynConn
 from collections import defaultdict
+import logging
 from typing import Union
 from .defines import (FUNDING, L2_BOOK, L3_BOOK, OPEN_INTEREST)
 from .connection import WSAsyncConn
 from .connection_handler import ConnectionHandler
+LOG = logging.getLogger('feedhandler')
 class Feed:
     '''
     This is the parent class for individual exchanges
@@ -37,6 +40,7 @@ class Feed:
             L3_BOOK: None,
             OPEN_INTEREST: None
         }
+        self.http_conn = HTTPAsynConn(self.id) 
         for cb_type, cb_func in callbacks.items():
             self.callbacks[cb_type] = cb_func
         for key, callback in self.callbacks.items():
@@ -46,8 +50,8 @@ class Feed:
     def start_connection(self, loop):
         '''
         loop: Asyncio object
-            Setup ws connection using self.address
-            Create tasks in main event loop
+        Setup ws connection using self.address
+        Create tasks in main event loop
         '''
         if isinstance(self.address, str):
             ws_array = [(WSAsyncConn(self.address, self.id, **self.ping_pong), self.subscribe, self.message_handler)]
@@ -57,5 +61,23 @@ class Feed:
                 ws_array.append((WSAsyncConn(self.address, self.id, **self.ping_pong), self.subscribe, self.message_handler))
         
         for conn, sub, handler in ws_array:
-            self.connection.append(ConnectionHandler(conn, sub, handler, self.retries))
+            self.connections.append(ConnectionHandler(conn, sub, handler, self.retries))
+            # start a new task for the latest added connection handler
+            self.connections[-1].start(loop)
 
+    async def message_handler(self, msg: str, conn: WSAsyncConn, timestamp: float):
+        raise NotImplementedError
+
+    async def subscribe(self, conn: WSAsyncConn, **kwargs):
+        """
+        kwargs will not be passed from anywhere, if you need to supply extra data to
+        your subscribe, bind the data to the method with a partial
+        """
+        raise NotImplementedError
+
+    async def shutdown(self):
+        LOG.info("%s: feed shutdown starting ...", self.id)
+        # await self.http_conn.close()
+        for conn in self.connections:
+            await conn.conn.close()
+        LOG.info("%s: feed shutdown completed", self.id)

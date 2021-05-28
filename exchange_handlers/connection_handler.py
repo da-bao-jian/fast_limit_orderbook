@@ -121,4 +121,4 @@ class ConnectionHandler:
             #     LOG.error("%s: error handling message %s", connection.uuid, message)
             # exception will be logged with traceback when connection handler
             # retries the connection
-            raise
+            # raise

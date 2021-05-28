@@ -9,6 +9,8 @@ uvloop = "*"
 aiohttp = "*"
 numpy = "*"
 pytest-asyncio = "*"
+sortedcontainers = "*"
+"yapic.json" = "*"
 
 [dev-packages]
 

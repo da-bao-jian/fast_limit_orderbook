@@ -12,7 +12,7 @@ from websockets import ConnectionClosed
 from websockets.exceptions import InvalidStatusCode
 
 from .connection import AsyncConnection
-from defines import HUOBI, HUOBI_DM, HUOBI_SWAP, OKCOIN, OKEX
+# from defines import HUOBI, HUOBI_DM, HUOBI_SWAP, OKCOIN, OKEX
 
 
 class ExhaustedRetries(Exception):

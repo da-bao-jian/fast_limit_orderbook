@@ -11,6 +11,8 @@ numpy = "*"
 pytest-asyncio = "*"
 sortedcontainers = "*"
 "yapic.json" = "*"
+websockets = "*"
+pandas = "*"
 
 [dev-packages]
 

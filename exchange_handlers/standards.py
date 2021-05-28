@@ -9,6 +9,49 @@ from .defines import (BINANCE, BINANCE_DELIVERY, BINANCE_FUTURES, BINANCE_US, BI
 from .defines import (FILL_OR_KILL, IMMEDIATE_OR_CANCEL, LIMIT, MAKER_OR_CANCEL, MARKET, UNSUPPORTED)
 from .defines import (FUNDING, FUTURES_INDEX, L2_BOOK, L3_BOOK, LIQUIDATIONS, OPEN_INTEREST, MARKET_INFO,
                                 TICKER, TRADES, ORDER_INFO)
+import logging
+
+class UnsupportedDataFeed(Exception):
+    pass
+
+class UnsupportedTradingOption(Exception):
+    pass
+
+LOG = logging.getLogger('feedhandler')
+
+def timestamp_normalize(exchange, ts):
+    if exchange == BYBIT:
+        if isinstance(ts, int):
+            return ts / 1000
+        else:
+            return ts.timestamp()
+    if exchange in {BITFLYER, COINBASE, BLOCKCHAIN}:
+        return ts.timestamp()
+    elif exchange in {BITMEX, HITBTC, OKCOIN, OKEX, FTX, FTX_US, BITCOINCOM, PROBIT, COINGECKO}:
+        return pd.Timestamp(ts).timestamp()
+    elif exchange in {HUOBI, HUOBI_DM, HUOBI_SWAP, BITFINEX, DERIBIT, BINANCE, BINANCE_US, BINANCE_FUTURES,
+                      BINANCE_DELIVERY, GEMINI, BITTREX, BITMAX, KRAKEN_FUTURES, UPBIT}:
+        return ts / 1000.0
+    elif exchange in {BITSTAMP}:
+        return ts / 1000000.0
+
+
+def feed_to_exchange(exchange, feed, silent=False):
+    def raise_error():
+        exception = UnsupportedDataFeed(f"{feed} is not currently supported on {exchange}")
+        if not silent:
+            LOG.error("Error: %r", exception)
+        raise exception
+
+    try:
+        ret = _feed_to_exchange_map[feed][exchange]
+    except KeyError:
+        raise_error()
+
+    if ret == UNSUPPORTED:
+        raise_error()
+    return ret
+
 _feed_to_exchange_map = {
     L2_BOOK: {
         BITFINEX: 'book-P0-F0-100',

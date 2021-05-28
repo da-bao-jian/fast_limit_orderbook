@@ -10,7 +10,7 @@ from decimal import Decimal
 import time
 import logging
 from sortedcontainers import SortedDict as sd 
-# from yapic import json 
+from yapic import json 
 from ..connection import AsyncConnection 
 from ..defines import BID, ASK, BUY, COINBASE, L2_BOOK, L3_BOOK, SELL, TICKER, TRADES
 from ..feeds import Feed

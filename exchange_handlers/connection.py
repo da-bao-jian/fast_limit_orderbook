@@ -145,7 +145,7 @@ class WSAsyncConn(AsyncConnection):
         self.sent = 0
         self.received = 0
 
-    async def read(self) -> AsyncIterable:
+    async def read(self):
         if not self.is_open:
             LOG.error('%s: connection closed in read()', self.id)
             raise ConnectionClosed

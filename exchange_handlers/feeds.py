@@ -1,7 +1,7 @@
 '''
 based on cryptofeed https://github.com/bmoscon/cryptofeed/feed.py
 '''
-from .connection import HTTPAsynConn
+from .connection import HTTPAsyncConn
 from collections import defaultdict
 import logging
 from typing import Union

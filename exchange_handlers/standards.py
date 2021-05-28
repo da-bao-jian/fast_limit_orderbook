@@ -52,6 +52,31 @@ def feed_to_exchange(exchange, feed, silent=False):
         raise_error()
     return ret
 
+
+def normalize_trading_options(exchange, option):
+    if option not in _exchange_options:
+        raise UnsupportedTradingOption
+    if exchange not in _exchange_options[option]:
+        raise UnsupportedTradingOption
+
+    ret = _exchange_options[option][exchange]
+    if ret == UNSUPPORTED:
+        raise UnsupportedTradingOption
+    return ret
+
+
+def normalize_channel(exchange: str, feed: str) -> str:
+    for chan, entries in _feed_to_exchange_map.items():
+        if exchange in entries:
+            if entries[exchange] == feed:
+                return chan
+    raise ValueError('Unable to normalize channel %s', feed)
+
+
+def is_authenticated_channel(channel: str) -> bool:
+    return channel in (ORDER_INFO)
+
+
 _feed_to_exchange_map = {
     L2_BOOK: {
         BITFINEX: 'book-P0-F0-100',

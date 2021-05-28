@@ -13,6 +13,7 @@ sortedcontainers = "*"
 "yapic.json" = "*"
 websockets = "*"
 pandas = "*"
+requests = "*"
 
 [dev-packages]
 

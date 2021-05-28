@@ -2,14 +2,21 @@
 based on cryptofeed https://github.com/bmoscon/cryptofeed/feed.py
 '''
 from .connection import HTTPAsyncConn
+from .symbols_parser import Symbols
 from collections import defaultdict
 import logging
-from typing import Union
+from typing import Union, Dict
 from .defines import (FUNDING, L2_BOOK, L3_BOOK, OPEN_INTEREST)
-from .connection import WSAsyncConn
+from .connection import WSAsyncConn, HTTPAsynConn
 from .connection_handler import ConnectionHandler
 LOG = logging.getLogger('feedhandler')
+
+class UnsupportedSymbol(Exception):
+    pass
+
+
 class Feed:
+    id='NotImplemented'
     '''
     This is the parent class for individual exchanges
     '''
@@ -34,6 +41,14 @@ class Feed:
         self.connections = []
         self.ping_pong = {'ping_interval': 10, 'ping_timeout': None, 'max_size': 2**23, 'max_queue': None}
         self.retries = retries
+
+        symbols_cache = Symbols
+        if not symbols_cache.populated(self.id):
+            self.symbol_mapping
+
+        self.normalized_symbol_mapping, self.exchange_info = symbols_cache.get(self.id)
+        self.exchange_symbol_mapping = {v: k for v, k in self.normalized_symbol_mapping.items()}
+
         self.callbacks = {
             FUNDING: None,
             L2_BOOK: None,
@@ -46,6 +61,39 @@ class Feed:
         for key, callback in self.callbacks.items():
             if not isinstance(callback, list):
                 self.callbacks[key] = [callback]
+
+    @classmethod
+    def symbol_mapping(cls, symbol_separator='-', refresh=False) -> Dict:
+        if Symbols.populated(cls.id) and not refresh:
+            return Symbols.get(cls.id)[0]
+        try:
+            LOG.debug("%s: reading symbol information from %s", cls.id, cls.symbol_endpoint)
+            if isinstance(cls.symbol_endpoint, list):
+                data = []
+                for ep in cls.symbol_endpoint:
+                    data.append(cls.http_sync.read(ep, json=True, uuid=cls.id))
+            else:
+                data = cls.http_sync.read(cls.symbol_endpoint, json=True, uuid=cls.id)
+            syms, info = cls._parse_symbol_data(data, symbol_separator)
+            breakpoint()
+            Symbols.set(cls.id, syms, info)
+            return syms
+        except Exception as e:
+            LOG.error("%s: Failed to parse symbol information: %s", cls.id, str(e), exc_info=True)
+            raise
+
+    def exchange_symbol_to_std_symbol(self, symbol: str):
+        try:
+            return self.exchange_symbol_mapping[symbol]
+        except KeyError:
+            raise UnsupportedSymbol(f'{symbol} is not supported on {self.id}')
+
+    def std_symbol_to_exchange_symbol(self, symbol: str) -> str:
+        try:
+            return self.normalized_symbol_mapping[symbol]
+        except KeyError:
+            raise UnsupportedSymbol(f'{symbol} is not supported on {self.id}')
+
 
     def start_connection(self, loop):
         '''

@@ -6,6 +6,7 @@ from typing import Union
 import websockets
 import aiohttp
 import time
+import requests
 from contextlib import asynccontextmanager
 LOG = logging.getLogger('feedhandler')
 
@@ -22,6 +23,30 @@ class Connection:
 
     async def write(self, msg: str):
         raise NotImplementedError
+
+class HTTPSync(Connection):
+    '''
+    Make request to the exchange in the Feed class's __init__ method
+    '''
+    def process_response(self, r, address, json=False, text=False, uuid=None):
+        if self.raw_data_callback:
+            self.raw_data_callback.sync_callback(r.text, time.time(), str(uuid), endpoint=address)
+        r.raise_for_status()
+        if json:
+            return r.json()
+        if text:
+            return r.text
+        return r
+
+    def read(self, address: str, json=False, text=True, uuid=None):
+        LOG.debug("HTTPSync: requesting data from %s", address)
+        r = requests.get(address)
+        return self.process_response(r, address, json=json, text=text, uuid=uuid)
+
+    def write(self, address: str, data=None, json=False, text=True, uuid=None):
+        LOG.debug("HTTPSync: post to %s", address)
+        r = requests.post(address, data=data)
+        return self.process_response(r, address, json=json, text=text, uuid=uuid)
 
 class AsyncConnection(Connection):
     conn_count: int = 0

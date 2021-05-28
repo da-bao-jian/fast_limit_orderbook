@@ -62,19 +62,30 @@ class ExchangeLoops:
             loop.run_forever()
         except SystemExit:
             LOG.info('FH: System exit received - shutting down')
+        except KeyboardInterrupt:
+            pass
         except Exception as why:
             LOG.exception('FH: Unhandled %r - shutting down', why)
         finally:
-            self.stop_loops(loop=loop)
+            # stop the feeds by shuting down the websocket, then close the asyncio event loop gracefully
+            self.stop_feeds(loop=loop)
             self.close_loops(loop=loop)
         LOG.info('FH: leaving run()')
     
-    def stop_loops(self, loop=None):
+    def stop_feeds(self, loop=None):
+        '''
+        Terminate the feedhandler by tunning feedhanlder.running to False, then shutdown the feeds gracefully
+        '''
+        for feed in self.loops:
+            # stop() method turns feedhandler.running to False
+            feed.stop()
+        
         shutdown_tasks = []
         if not loop:
             loop = asyncio.get_event_loop()
         LOG.info('FH: shudown connections handlers in feeds')
         for feed in self.loops:
+            # close the ws
             task = loop.create_task(feed.shutdown())
             try:
                 task.set_name(f'shudown {feed.id}')
@@ -84,3 +95,19 @@ class ExchangeLoops:
         loop.run_until_complete(asyncio.gather(*shutdown_tasks))
     
     def close_loops(self, loop=None):
+        if not loop:
+            loop = asyncio.get_event_loop()
+        LOG.info('FH: stop the asynio loop')
+        loop.stop()
+        LOG.info('FH: run the Asyncio event loop one last time')
+        # for the clean up, run the loop one last time
+        loop.run_forever()
+
+        pending = asyncio.all_tasks(loop=loop)
+        LOG.info('FH: cancel the %s pending tasks',len(pending))
+        for task in pending:
+            task.cancel()
+        LOG.info('FH: run the pending tasks if not sucessfully cancelled')
+        loop.run_until_complete(asyncio.gather(*pending, loop=loop, return_exceptions=True))
+        LOG.info('FH: close the event loop')
+        loop.close()

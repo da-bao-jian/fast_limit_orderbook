@@ -77,7 +77,12 @@ class Feed:
 
     async def shutdown(self):
         LOG.info("%s: feed shutdown starting ...", self.id)
+
         # await self.http_conn.close()
         for conn in self.connections:
             await conn.conn.close()
         LOG.info("%s: feed shutdown completed", self.id)
+
+    def stop(self):
+        for conn in self.connections:
+            conn.running = False

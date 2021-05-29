@@ -11,6 +11,7 @@ class _Symbols:
         self.data[exchange] = {}
         self.data[exchange]['normalized'] = normalized
         self.data[exchange]['info'] = exchange_info
+        breakpoint()
 
     def get(self, exchange: str) -> Tuple[Dict, Dict]:
         return self.data[exchange]['normalized'], self.data[exchange]['info']

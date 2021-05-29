@@ -29,8 +29,8 @@ class Coinbase(Feed):
             info['tick_size'][normalized] = entry['quote_increment']
         return ret, info
 
-    def __init__(self):
-        super().__init__('wss://ftexchange.com/ws/', **kwargs)
+    def __init__(self, callbacks=None, **kwargs):
+        super().__init__('wss://ws-feed.pro.coinbase.com', callbacks=callbacks, **kwargs)
         self.SYMBOL_ENDPOINT = 'https://api.pro.coinbase.com/products' 
          # we only keep track of the L3 order book if we have at least one subscribed order-book callback.
         # use case: subscribing to the L3 book plus Trade type gives you order_type information (see _received below),

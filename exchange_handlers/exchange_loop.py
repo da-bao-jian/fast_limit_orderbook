@@ -29,15 +29,10 @@ class ExchangeLoops:
     def add_loop(self, feed):
         '''
         Add the exchange feed to the event loop
-        feed: str 
+        feed: class 
             all capital letters i.e. FTX, BYBIT
         '''
-        if isinstance(feed, str):
-            if feed in mapping:
-                self.loops.append((mapping[feed]()))
-        else:
-            raise ValueError("Invalid feed")
-    
+        self.feeds.append((feed)) 
     def start_loops(self, start_loop: bool=True, exception_handler = None):
         '''
         start_loop: bool 
@@ -111,3 +106,6 @@ class ExchangeLoops:
         loop.run_until_complete(asyncio.gather(*pending, loop=loop, return_exceptions=True))
         LOG.info('FH: close the event loop')
         loop.close()
+
+if __name__ == '__main__':
+    f= Coinbase()

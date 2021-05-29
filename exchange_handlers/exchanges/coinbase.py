@@ -16,8 +16,11 @@ from ..defines import BID, ASK, BUY, COINBASE, L2_BOOK, L3_BOOK, SELL, TICKER, T
 from ..feeds import Feed
 from ..standards import timestamp_normalize, feed_to_exchange
 LOG = logging.getLogger('feedhandler')
+
 class Coinbase(Feed):
     id = COINBASE
+    symbol_endpoint = 'https://api.pro.coinbase.com/products'
+
     @classmethod
     def _parse_symbol_data(cls, data: dict, symbol_separator: str) -> Tuple[Dict, Dict]:
         ret = {}
@@ -27,12 +30,11 @@ class Coinbase(Feed):
             normalized = entry['id'].replace("-", symbol_separator)
             ret[normalized] = entry['id']
             info['tick_size'][normalized] = entry['quote_increment']
-        return ret, info
+        return ret, info 
 
     def __init__(self, callbacks=None, **kwargs):
         super().__init__('wss://ws-feed.pro.coinbase.com', callbacks=callbacks, **kwargs)
-        self.SYMBOL_ENDPOINT = 'https://api.pro.coinbase.com/products' 
-         # we only keep track of the L3 order book if we have at least one subscribed order-book callback.
+        # we only keep track of the L3 order book if we have at least one subscribed order-book callback.
         # use case: subscribing to the L3 book plus Trade type gives you order_type information (see _received below),
         # and we don't need to do the rest of the book-keeping unless we have an active callback
         self.keep_l3_book = False

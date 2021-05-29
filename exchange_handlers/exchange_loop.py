@@ -9,6 +9,7 @@ import uvloop
 from .exchanges.bybit import Bybit
 from .exchanges.coinbase import Coinbase
 from .exchanges.ftx import FTX
+from .defines import L2_BOOK, BOOK_DELTA
 
 mapping = {
     FTX:FTX,
@@ -32,7 +33,7 @@ class ExchangeLoops:
         feed: class 
             all capital letters i.e. FTX, BYBIT
         '''
-        self.feeds.append((feed)) 
+        self.loops.append((feed)) 
     def start_loops(self, start_loop: bool=True, exception_handler = None):
         '''
         start_loop: bool 
@@ -108,4 +109,8 @@ class ExchangeLoops:
         loop.close()
 
 if __name__ == '__main__':
-    f= Coinbase()
+    async def book(feed, symbol, book, timestamp, receipt_timestamp):
+        print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Snapshot: {book}')
+    async def delta(feed, symbol, delta, timestamp, receipt_timestamp):
+        print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Delta: {delta}')
+    f= Coinbase(symbols=['BTC-USD'], channels=[L2_BOOK], callbacks={BOOK_DELTA: delta, L2_BOOK: book})

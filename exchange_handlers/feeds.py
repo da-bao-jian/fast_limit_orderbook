@@ -6,8 +6,9 @@ from collections import defaultdict
 import logging
 from typing import Union, Dict
 from .defines import (FUNDING, L2_BOOK, L3_BOOK, OPEN_INTEREST)
-from .connection import WSAsyncConn, HTTPAsyncConn
+from .connection import WSAsyncConn, HTTPAsyncConn, HTTPSync
 from .connection_handler import ConnectionHandler
+from .standards import feed_to_exchange, is_authenticated_channel
 LOG = logging.getLogger('feedhandler')
 
 class UnsupportedSymbol(Exception):
@@ -16,6 +17,7 @@ class UnsupportedSymbol(Exception):
 
 class Feed:
     id='NotImplemented'
+    http_sync = HTTPSync()
     '''
     This is the parent class for individual exchanges
     '''
@@ -35,7 +37,6 @@ class Feed:
         '''
         self.subscriptions = defaultdict(set) 
         # multi-channel subscription for symbols
-        self.subscriptions = {chan: symbols for chan in channels}
         # ping_pong is used as websockets.connect argument in WSAsyncConn class
         self.connections = []
         self.ping_pong = {'ping_interval': 10, 'ping_timeout': None, 'max_size': 2**23, 'max_queue': None}
@@ -43,10 +44,21 @@ class Feed:
 
         symbols_cache = Symbols
         if not symbols_cache.populated(self.id):
-            self.symbol_mapping
+            self.symbol_mapping()
 
         self.normalized_symbol_mapping, self.exchange_info = symbols_cache.get(self.id)
         self.exchange_symbol_mapping = {v: k for v, k in self.normalized_symbol_mapping.items()}
+
+        if symbols and channels:
+            if any(is_authenticated_channel(chan) for chan in channels):
+                if not self.key_id or not self.key_secret:
+                    raise ValueError("Authenticated channel subscribed to, but no auth keys provided")
+            # if we dont have a subscription dict, we'll use symbols+channels and build one
+            self.normalized_symbols = symbols
+            # convert the exchange specific symbol to uniform symbols
+            symbols = [self.std_symbol_to_exchange_symbol(symbol) for symbol in symbols]
+            channels = list(set([feed_to_exchange(self.id, chan) for chan in channels]))
+            self.subscription = {chan: symbols for chan in channels}
 
         self.callbacks = {
             FUNDING: None,
@@ -77,7 +89,6 @@ class Feed:
             else:
                 data = cls.http_sync.read(cls.symbol_endpoint, json=True, uuid=cls.id)
             syms, info = cls._parse_symbol_data(data, symbol_separator)
-            breakpoint()
             Symbols.set(cls.id, syms, info)
             return syms
         except Exception as e:

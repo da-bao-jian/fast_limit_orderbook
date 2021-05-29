@@ -2,6 +2,7 @@
 based on cryptofeed https://github.com/bmoscon/cryptofeed/feed.py
 '''
 from .symbols_parser import Symbols
+import asyncio
 from collections import defaultdict
 import logging
 from typing import Union, Dict
@@ -112,8 +113,8 @@ class Feed:
     def start_connection(self, loop):
         '''
         loop: Asyncio object
-        Setup ws connection using self.address
-        Create tasks in main event loop
+            Setup ws connection using self.address
+            Create tasks in main event loop
         '''
         if isinstance(self.address, str):
             ws_array = [(WSAsyncConn(self.address, self.id, **self.ping_pong), self.subscribe, self.message_handler)]
@@ -121,7 +122,6 @@ class Feed:
             ws_array = []
             for _, addr in self.address.items():
                 ws_array.append((WSAsyncConn(self.address, self.id, **self.ping_pong), self.subscribe, self.message_handler))
-        
         for conn, sub, handler in ws_array:
             self.connections.append(ConnectionHandler(conn, sub, handler, self.retries))
             # start a new task for the latest added connection handler

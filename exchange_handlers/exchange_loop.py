@@ -6,6 +6,7 @@ import asyncio
 import logging
 from .defines import (FTX, BYBIT, COINBASE)
 import uvloop
+import time
 from .exchanges.bybit import Bybit
 from .exchanges.coinbase import Coinbase
 from .exchanges.ftx import FTX
@@ -18,6 +19,10 @@ mapping = {
 }
 
 LOG = logging.getLogger('feedhandler')
+
+async  def finish_loops(loop):
+        pending = asyncio.all_tasks()
+        await loop.run_until_complete(asyncio.gather(*pending))
 
 class ExchangeLoops:
     '''
@@ -35,7 +40,12 @@ class ExchangeLoops:
         '''
         self.loops.append((feed)) 
 
-    def start_loops(self, start_loop: bool=True, exception_handler = None):
+    async def stop_loop(self, loop):
+        await asyncio.sleep(2)
+        loop.stop()
+
+
+    def start_loops(self, start_loop: bool=True, exception_handler = None, testing: bool=False):
         '''
         start_loop: bool 
             event loop will not start if false
@@ -50,12 +60,18 @@ class ExchangeLoops:
         for feed in self.loops:
             # create task to the event loop
             feed.start_connection(loop)
+
         if not start_loop:
             return
         try:
             if exception_handler:
                 loop.set_exception_handler(exception_handler)
-            loop.run_forever()
+            if testing:
+                loop.create_task(self.stop_loop(loop))
+                pending = asyncio.all_tasks(loop)
+                loop.run_until_complete(asyncio.gather(*pending))
+            else:
+                loop.run_forever()
         except SystemExit:
             LOG.info('FH: System exit received - shutting down')
         except KeyboardInterrupt:
@@ -64,8 +80,9 @@ class ExchangeLoops:
             LOG.exception('FH: Unhandled %r - shutting down', why)
         finally:
             # stop the feeds by shuting down the websocket, then close the asyncio event loop gracefully
-            self.stop_feeds(loop=loop)
-            self.close_loops(loop=loop)
+            if not testing:
+                self.stop_feeds(loop=loop)
+                self.close_loops(loop=loop)
         LOG.info('FH: leaving run()')
     
     def stop_feeds(self, loop=None):
@@ -109,8 +126,10 @@ class ExchangeLoops:
         loop.close()
 
 if __name__ == '__main__':
+    f = ExchangeLoops()
     async def book(feed, symbol, book, timestamp, receipt_timestamp):
         print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Snapshot: {book}')
     async def delta(feed, symbol, delta, timestamp, receipt_timestamp):
         print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Delta: {delta}')
-    f= Coinbase(symbols=['BTC-USD'], channels=[L2_BOOK], callbacks={BOOK_DELTA: delta, L2_BOOK: book})
+    f.add_loop(Coinbase(symbols=['BTC-USD'], channels=[L2_BOOK], callbacks={BOOK_DELTA: delta, L2_BOOK: book}))
+    f.start_loops()

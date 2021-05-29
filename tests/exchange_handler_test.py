@@ -29,7 +29,10 @@ def test_coinbase_parse_symbol_data(coinbase_instance):
     assert symbols.populated('COINBASE') == True
     assert symbols.data['COINBASE']['normalized'] != None
 
-def test_initiate_event_loop(coinbase_instance, exchange_loop_instance):
+def test_event_loop_cycle(coinbase_instance, exchange_loop_instance):
+    '''
+    Test full event loop cycle, from initiation to stopping the feed
+    '''
     exchange_loop_instance.add_loop(coinbase_instance) 
     exchange_loop_instance.start_loops(testing=True)
     assert len(exchange_loop_instance.loops) != 0 
@@ -37,14 +40,12 @@ def test_initiate_event_loop(coinbase_instance, exchange_loop_instance):
     assert isinstance(coinbase_instance.connections[-1], ConnectionHandler)
     assert isinstance(coinbase_instance.connections[0].conn, AsyncConnection)
     assert coinbase_instance.subscription == {'level2': ['BTC-USD']}
-
+    for conn in coinbase_instance.connections:
+        assert conn.running == False
+        
 def test_no_feed_in_event_loop_error(exchange_loop_instance):
     with pytest.raises(ValueError):
         exchange_loop_instance.start_loops()
-
-    
-def test_stop_feeds(coinbase_instance, exchange_loop_instance):
-    pass
 
 def test_close_loops(coinbase_instance, exchange_loop_instance):
     pass

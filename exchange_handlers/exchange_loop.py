@@ -20,9 +20,6 @@ mapping = {
 
 LOG = logging.getLogger('feedhandler')
 
-async  def finish_loops(loop):
-        pending = asyncio.all_tasks()
-        await loop.run_until_complete(asyncio.gather(*pending))
 
 class ExchangeLoops:
     '''
@@ -41,14 +38,20 @@ class ExchangeLoops:
         self.loops.append((feed)) 
 
     async def stop_loop(self, loop):
+        '''
+        Function used for testing the event loop
+        '''
         await asyncio.sleep(2)
-        loop.stop()
+        # loop.stop()
+        self.stop_feeds()
 
 
     def start_loops(self, start_loop: bool=True, exception_handler = None, testing: bool=False):
         '''
         start_loop: bool 
             event loop will not start if false
+        testing: bool
+            if true, will only use run_until_complete instead of run_forever for testing purposes
         '''
         if len(self.loops) == 0:
             text = "FH: No feed specified. Please specify at least one feed"

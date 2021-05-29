@@ -36,9 +36,9 @@ class Feed:
             channels subscribed
         '''
         self.subscriptions = defaultdict(set) 
-        # multi-channel subscription for symbols
-        # ping_pong is used as websockets.connect argument in WSAsyncConn class
+        self.address = address
         self.connections = []
+        # ping_pong is used as websockets.connect argument in WSAsyncConn class
         self.ping_pong = {'ping_interval': 10, 'ping_timeout': None, 'max_size': 2**23, 'max_queue': None}
         self.retries = retries
 

@@ -34,13 +34,14 @@ class ExchangeLoops:
             all capital letters i.e. FTX, BYBIT
         '''
         self.loops.append((feed)) 
+
     def start_loops(self, start_loop: bool=True, exception_handler = None):
         '''
         start_loop: bool 
             event loop will not start if false
         '''
         if len(self.loops) == 0:
-            text = f'FH: No feed specified. Please specify at least one feed among {list(EXCHANGE_MAP.keys())}'
+            text = "FH: No feed specified. Please specify at least one feed"
             LOG.critical(text)
             raise ValueError(text)
 
@@ -48,10 +49,9 @@ class ExchangeLoops:
 
         for feed in self.loops:
             # create task to the event loop
-            feed.start(loop)
+            feed.start_connection(loop)
         if not start_loop:
             return
-
         try:
             if exception_handler:
                 loop.set_exception_handler(exception_handler)

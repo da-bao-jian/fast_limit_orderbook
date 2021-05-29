@@ -15,12 +15,16 @@ def coinbase_instance():
 
     return Coinbase(symbols=['BTC-USD'], channels=[L2_BOOK], callbacks={BOOK_DELTA: delta, L2_BOOK: book})
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def exchange_loop_instance():
     f = ExchangeLoops()
     return f
 
-
 def test_add_event_loop(coinbase_instance, exchange_loop_instance):
     exchange_loop_instance.add_loop(coinbase_instance) 
     assert len(exchange_loop_instance.loops) != 0 
+    assert isinstance(exchange_loop_instance.loops[0], Coinbase)
+
+def test_no_feed_in_event_loop_error(exchange_loop_instance):
+    with pytest.raises(ValueError):
+        exchange_loop_instance.start_loops()

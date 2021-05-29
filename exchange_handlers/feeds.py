@@ -83,6 +83,7 @@ class Feed:
         try:
             LOG.debug("%s: reading symbol information from %s", cls.id, cls.symbol_endpoint)
             if isinstance(cls.symbol_endpoint, list):
+                # some exchanges have multiple endpoints, like Deribit, so they are stored in lists 
                 data = []
                 for ep in cls.symbol_endpoint:
                     data.append(cls.http_sync.read(ep, json=True, uuid=cls.id))

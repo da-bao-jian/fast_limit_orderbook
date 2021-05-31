@@ -1,4 +1,3 @@
-import asyncio
 from ..exchange_handlers.exchange_loop import ExchangeLoops
 from ..exchange_handlers.exchanges.coinbase import Coinbase
 from ..exchange_handlers.exchanges.ftx import FTX
@@ -31,7 +30,7 @@ def test_coinbase_parse_symbol_data(coinbase_instance):
 
 def test_event_loop_cycle(coinbase_instance, exchange_loop_instance):
     '''
-    Test full event loop cycle, from initiation to stopping the feed
+    Test full event loop cycle, from initiation to termination 
     '''
     exchange_loop_instance.add_loop(coinbase_instance) 
     exchange_loop_instance.start_loops(testing=True)

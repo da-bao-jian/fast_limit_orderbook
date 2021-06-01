@@ -1,4 +1,5 @@
 from bintrees import FastRBTree
+from .order import OrderLinkedlist, Order
 
 class LOBTree:
 
@@ -7,10 +8,17 @@ class LOBTree:
         Limit order book tree implementation using Red-Black tree for self-balancing 
         Each limit price level is a OrderLinkedlist, and each order contains information 
         including id, price, timestamp, volume
+        self.limit_level: dict
+            key: price level; value: OrderLinkedlist object
+        self.order_ids: dict  
+            key: order id; value: Order object
+            helps to locate order by id
         '''
         self.price_tree = FastRBTree()
         self.max = None  
         self.min = None
+        self.limit_levels = {}
+        self.order_ids = {}
 
     @property
     def max(self):

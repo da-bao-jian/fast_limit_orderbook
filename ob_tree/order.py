@@ -1,7 +1,4 @@
 
-from logging import setLogRecordFactory
-
-
 class OrderLinkedlist:
 
     def __init__(self):

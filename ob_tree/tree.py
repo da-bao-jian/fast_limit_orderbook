@@ -29,6 +29,10 @@ class LOBTree:
         return self.min
 
     def insert(self, price):
+        new_price_level = OrderLinkedlist()
+        self.price_tree.insert(price, new_price_level)
+        self.limit_levels[price] = new_price_level
+
         pass
 
     def remove(self):

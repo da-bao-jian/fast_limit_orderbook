@@ -14,6 +14,7 @@ sortedcontainers = "*"
 websockets = "*"
 pandas = "*"
 requests = "*"
+bintrees = "*"
 
 [dev-packages]
 

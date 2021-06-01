@@ -12,9 +12,9 @@ class OrderLinkedlist:
 
 
 class Order:
-    def __init__(self, price, id, timestamp, size, type):
+    def __init__(self, price, id, timestamp, size, side):
         self.price = price
         self.id = id
         self.timestamp = timestamp
-        self.size = size
+        self.side = side
         self.type = type

@@ -15,8 +15,8 @@ class LOBTree:
             helps to locate order by id
         '''
         self.price_tree = FastRBTree()
-        self.max = None  
-        self.min = None
+        self.max_price = None  
+        self.min_price = None
         self.limit_levels = {}
         self.order_ids = {}
 
@@ -28,7 +28,7 @@ class LOBTree:
     def min(self):
         return self.min
 
-    def insert(self):
+    def insert(self, price):
         pass
 
     def remove(self):

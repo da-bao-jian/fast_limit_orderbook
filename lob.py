@@ -82,7 +82,7 @@ in O(1) time when a limit is deleted (which is why each Limit has a Limit
 *parent) so that GetBestBid/Offer can remain O(1)."
 '''
 
-from ob_tree.tree import LOBTree
+from .ob_tree.tree import LOBTree
 
 
 class LimitOrderBook:
@@ -91,3 +91,6 @@ class LimitOrderBook:
         self.ask = LOBTree()
         self.best_bid = None
         self.best_ask = None
+
+    def process_order(self, order):
+        pass

@@ -15,6 +15,8 @@ websockets = "*"
 pandas = "*"
 requests = "*"
 bintrees = "*"
+autopep8 = "*"
+flake8 = "*"
 
 [dev-packages]
 

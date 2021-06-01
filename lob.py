@@ -84,9 +84,10 @@ in O(1) time when a limit is deleted (which is why each Limit has a Limit
 
 from ob_tree.tree import LOBTree
 
+
 class LimitOrderBook:
     def __init__(self):
         self.bid = LOBTree()
         self.ask = LOBTree()
-        self.best_bid = None  
+        self.best_bid = None
         self.best_ask = None

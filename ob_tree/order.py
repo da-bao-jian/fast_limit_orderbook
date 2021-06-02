@@ -1,8 +1,27 @@
+class Order:
+    def __init__(self, price, id, timestamp, size, side):
+        self.price = price
+        self.id = id
+        self.timestamp = timestamp
+        self.side = side
+        self.size = size
+        self.type = type
+        self.prev = None
+        self.next = None
+        self.volume = self.size * self.price
+
+    def is_bid(self):
+        '''
+        Return true is order is bid, otherwise false
+        :return: bool
+        '''
+        return self.side == 'bid'
 
 class OrderLinkedlist:
 
     def __init__(self):
-        self.total_volume = 0
+        self.volume = 0
+        self.size = 0
         self._head = None
         self._tail = None
 
@@ -18,6 +37,8 @@ class OrderLinkedlist:
             self._tail= order
             return
         self.insert_before(self._head, order)
+        self.size += order.size
+        self.volume += order.volume
 		
     def set_tail(self, order):
         '''
@@ -31,6 +52,8 @@ class OrderLinkedlist:
             self._tail= order
             return
         self.insert_after(self._tail, order)
+        self.size += order.size
+        self.volume += order.volume
 
     def insert_before(self, order, order_to_insert):
         '''
@@ -41,7 +64,7 @@ class OrderLinkedlist:
         '''
         if order_to_insert == self._head and order_to_insert == self._tail:
             return
-        self.remove(order_to_insert)
+        self.remove(order_to_insert, decrement=False)
         if order != self._head:			
             order_to_insert = order.prev			
             order_to_insert = order
@@ -62,7 +85,7 @@ class OrderLinkedlist:
         '''
         if order_to_insert == self._head and order_to_insert == self._tail:
             return
-        self.remove(order_to_insert)
+        self.remove(order_to_insert, decrement=False)
         if order != self._tail:			
             order_to_insert.prev = order			
             order_to_insert.next = order.next
@@ -108,9 +131,11 @@ class OrderLinkedlist:
     #             self.remove(temp_node)
 
 
-    def remove(self, order):
+    def remove(self, order, decrement: bool=True):
         '''
         order: Order Instance
+        decrement: bool
+            decrement self.size when True
             Remove given order
             O(1)
         '''
@@ -124,10 +149,14 @@ class OrderLinkedlist:
             order.next.prev = order.prev
         order.prev = None
         order.next = None
+        if decrement:
+            self.size -= order.size
+            self.volume -= order.volume
 
     def containing_order(self, value) -> bool:
         '''
         Search for an order given its value, return True if it's in the list, False otherwise
+        O(n)
         '''
         order = self._head
         while order is not None and order.value != value:
@@ -135,13 +164,3 @@ class OrderLinkedlist:
         return order is not None
 	
 	
-
-class Order:
-    def __init__(self, price, id, timestamp, size, side):
-        self.price = price
-        self.id = id
-        self.timestamp = timestamp
-        self.side = side
-        self.type = type
-        self.prev = None
-        self.next = None

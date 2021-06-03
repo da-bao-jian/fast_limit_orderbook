@@ -101,12 +101,12 @@ class LimitOrderBook:
         if order.order_type == 'limit':
             if order.is_bid:
                 if order.id in self.bid.order_ids:
-                    self.bid.update_existing_order(order)
+                    self.update_order(order)
                 else:
-                    self.bid.insert_order(order)
+                    self.update_order(order.id, 'bid')
             else:
                 if order.id in self.ask.order_ids:
-                    self.ask.update_existing_order(order)
+                    self.update_order(order.id, 'ask')
                 else:
                     self.ask.insert_order(order)
         elif order.order_type == 'market':
@@ -114,3 +114,12 @@ class LimitOrderBook:
                 self.ask.market_order(order)
             else:
                 self.bid.market_order(order)
+    
+    def update_order(self, order_id: int, side: str):
+        '''
+        Given the order id and side, call the update_existing_order in that book
+        '''
+        if side == 'bid':
+            self.bid.update_existing_order(order_id)
+        else:
+            self.ask.update_existing_order(order_id)

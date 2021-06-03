@@ -35,11 +35,11 @@ class LOBTree:
 
     @property
     def max(self):
-        return self.max
+        return self.max_price
     
     @property
     def min(self):
-        return self.min
+        return self.min_price
     
     def _get_price(self, price):
         '''
@@ -79,11 +79,11 @@ class LOBTree:
             self.order_ids[order.id] = order
             self.price_tree[order.price] += 1
 
-    def update_existing_order(self, order_id: int, updated_size: int):
+    def update_existing_order_size(self, order_id: int, updated_size: int):
         '''
         order_id: int
         size: int
-            Update an existing order in a price level and its price level's size
+            Update an existing order's size in a price level and its price level's overall size
         :return: None
         '''
         delta = self.order_ids[order_id].size - updated_size
@@ -104,12 +104,14 @@ class LOBTree:
             then remove it from the self.limit_levels;
             if the limit_levels is empty after removal, 
             adjust the max_price and min_price accordingly from the self.price_tree
+        :return: Order Instance | order removed from the book
         '''
         popped = self.order_ids.pop(order_id)
         self.limit_levels[popped.price].remove(popped, decrement=True)
         self.price_tree[popped.price] -= 1
         if self.limit_levels[popped.price].size == 0:
             self._remove_price_level(popped.price)
+        return popped
 
     def _remove_price_level(self, price: int):
         '''

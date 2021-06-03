@@ -110,22 +110,45 @@ class LimitOrderBook:
                 else:
                     raise ValueError('Order already in the list, please use "update" order')
         elif order.order_type == 'market':
-            if order.is_bid:
+            if order.is_bid():
                 self.ask.market_order(order)
             else:
                 self.bid.market_order(order)
-        elif order.order_type == 'update':
-            if order.is_bid:
-                self.update_order(order.id, 'bid')
-            else:
-                self.update_order(order.id, 'ask')
-
+ 
     
-    def update_order(self, order_id: int, side: str):
+    def update_order(self, order_id: int, side: str, new_size: int = None, new_price: int = None, change_size: bool = True, change_price: bool = True):
         '''
-        Given the order id and side, call the update_existing_order in that book
+        new_size: int | needed only if change_size is True
+        change_size: bool | if False, this function serves to change the price
+            Given the order id and side, call the update_existing_order in that book;
+            if change_size is True, change the size; if change_price is True, change the price;
+            if both, change both;
+            if new_size is provided but change_size is False, it will simply be ignored; same applies to new_price
         '''
+        if change_size and new_size is None:
+            raise TypeError('If change_size is True, new_size needs to be specified')
+        if change_price and new_price is None:
+            raise TypeError('If change_price is True, new_price needs to be specified')
+        if not change_size and not change_price:
+            return
+
         if side == 'bid':
-            self.bid.update_existing_order(order_id)
+            if change_price:
+                # take the order away from the list => change its price to the new_price => (if change_size is true, change price accordingly)
+                # => insert back into a new level
+                removed_order = self.bid.remove_order(order_id)
+                removed_order.price = new_price
+                if change_size:
+                    removed_order.size = new_size
+                self.bid.insert_order(removed_order)
+            elif change_size:
+                self.bid.update_existing_order_size(order_id, new_size)
         else:
-            self.ask.update_existing_order(order_id)
+            if change_price:
+                removed_order = self.ask.remove_order(order_id)
+                removed_order.price = new_price
+                if change_size:
+                    removed_order.size = new_size
+                self.ask.insert_order(removed_order)
+            elif change_size:
+                self.ask.update_existing_order_size(order_id, new_size)

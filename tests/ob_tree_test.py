@@ -8,10 +8,16 @@ import random
 
 @pytest.fixture(scope='module')
 def lob_instance():
+    '''
+    To test the whole cycle
+    '''
     return LimitOrderBook()
 
 @pytest.fixture(scope='module')
 def lobtree_instance():
+    '''
+    To test individual functions in isolation
+    '''
     return LOBTree()
 
 @pytest.fixture(scope='module')
@@ -54,6 +60,7 @@ def test_insert_order_function(lobtree_instance, single_order_instance_factory):
     # test FIFO structure of the OrderLinkedList
     assert lobtree_instance.limit_levels[10001]._head.id == 101014
     assert lobtree_instance.limit_levels[10001]._tail.id == 101013
+    assert lobtree_instance.limit_levels[10001].size == 2000
     assert lobtree_instance.max_price == 10002
     assert lobtree_instance.min_price == 10000
     
@@ -63,6 +70,11 @@ def test_insert_order_function_exception(lobtree_instance, single_order_instance
         lobtree_instance.insert_order(single_order_instance_factory(price=10010, id=101011, order_type='limit', timestamp=time.time(), size=1000, side='bid'))
     assert lobtree_instance.order_ids[101011].price == 10000
 
+def test_update_existing_order_function(lobtree_instance):
+    lobtree_instance.update_existing_order(101013, 1010)
+    assert lobtree_instance.order_ids[101013].size == 1010
+    assert lobtree_instance.limit_levels[10001].size == 2010
+    assert lobtree_instance.limit_levels[10001]._head.id == 101013
 
 # def test_process_order(lob_instance, order_instance):
 #     '''

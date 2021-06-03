@@ -17,8 +17,6 @@ class OrderLinkedlist:
         if self._head is None:
             self._head = order
             self._tail= order
-            self.size += order.size
-            self.volume += order.volume
             return
         self.insert_before(self._head, order)
 		
@@ -32,8 +30,6 @@ class OrderLinkedlist:
         if self._tail is None:
             self._head = order
             self._tail= order
-            self.size += order.size
-            self.volume += order.volume
             return
         self.insert_after(self._tail, order)
 

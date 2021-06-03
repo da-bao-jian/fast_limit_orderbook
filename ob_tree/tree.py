@@ -66,6 +66,7 @@ class LOBTree:
             self.price_tree[order.price] = 1
             self.limit_levels[order.price] = new_price_level
             self.limit_levels[order.price].set_head(order)
+            self.limit_levels[order.price].size += order.size
             self.order_ids[order.id] = order
             if self.max_price is None or order.price > self.max_price:
                 self.max_price = order.price
@@ -73,21 +74,24 @@ class LOBTree:
                 self.min_price  = order.price 
         else:
             self.limit_levels[order.price].set_head(order)
+            self.limit_levels[order.price].size += order.size
             self.order_ids[order.id] = order
             self.price_tree[order.price] += 1
 
-    def update_existing_order(self, order: Order):
+    def update_existing_order(self, order_id: int, size: int):
         '''
-        order: Order Instance
+        order_id: int
+        size: int
             Update an existing order in a price level and its price level's size
         :return: None
         '''
-        delta = self.order_ids[order.id].size - order.size
+        delta = self.order_ids[order_id].size - size
         try:
-            self.order_ids[order.id].size = order.size
+            self.order_ids[order_id].size = size
+            order_price = self.order_ids[order_id].price
             # updated order will be put at the front of the list
-            self.limit_levels[order.price].set_head(self.order_ids[order.id])
-            self.limit_levels[order.price].size -= delta
+            self.limit_levels[order_price].set_head(self.order_ids[order_id])
+            self.limit_levels[order_price].size -= delta
         except Exception as e:
             LOG.info('Order is not in the book')
 

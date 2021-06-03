@@ -84,7 +84,6 @@ in O(1) time when a limit is deleted (which is why each Limit has a Limit
 
 from .ob_tree.tree import LOBTree
 
-
 class LimitOrderBook:
     def __init__(self):
         self.bid = LOBTree()
@@ -95,7 +94,7 @@ class LimitOrderBook:
     def process_order(self, order):
         '''
         Take in either a limit or market order; 
-        if limit order's side is bid, add it to the bid book, else add it to the ask book
+        if limit order's side is bid, add it to the bid book, else add it to the ask book;
         if market order's side is 'bid', match it against the ask book, else match it against the bid book
         '''
         if order.order_type == 'limit':

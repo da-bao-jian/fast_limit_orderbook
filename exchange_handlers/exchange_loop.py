@@ -1,6 +1,3 @@
-'''
-based on cryptofeed https://github.com/bmoscon/cryptofeed/feed.py
-'''
 from .logger import custom_logger
 import asyncio
 import logging

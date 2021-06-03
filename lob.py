@@ -93,4 +93,24 @@ class LimitOrderBook:
         self.best_ask = None
 
     def process_order(self, order):
-        pass
+        '''
+        Take in either a limit or market order; 
+        if limit order's side is bid, add it to the bid book, else add it to the ask book
+        if market order's side is 'bid', match it against the ask book, else match it against the bid book
+        '''
+        if order.order_type == 'limit':
+            if order.is_bid:
+                if order.id in self.bid.order_ids:
+                    self.bid.update_existing_order(order)
+                else:
+                    self.bid.insert_order(order)
+            else:
+                if order.id in self.ask.order_ids:
+                    self.ask.update_existing_order(order)
+                else:
+                    self.ask.insert_order(order)
+        elif order.order_type == 'market':
+            if order.is_bid:
+                self.ask.market_order(order)
+            else:
+                self.bid.market_order(order)

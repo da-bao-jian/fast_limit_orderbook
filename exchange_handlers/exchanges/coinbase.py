@@ -1,6 +1,3 @@
-'''
-based on cryptofeed https://github.com/bmoscon/cryptofeed
-'''
 import asyncio
 from ..feeds import Feed
 from ..defines import COINBASE

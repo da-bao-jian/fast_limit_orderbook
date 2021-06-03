@@ -61,6 +61,7 @@ class LOBTree:
             raise ValueError('order already exists in the book')
             return
         
+        
         if order.price not in self.limit_levels:
             new_price_level = OrderLinkedlist()
             self.price_tree[order.price] = 1
@@ -78,16 +79,16 @@ class LOBTree:
             self.order_ids[order.id] = order
             self.price_tree[order.price] += 1
 
-    def update_existing_order(self, order_id: int, size: int):
+    def update_existing_order(self, order_id: int, updated_size: int):
         '''
         order_id: int
         size: int
             Update an existing order in a price level and its price level's size
         :return: None
         '''
-        delta = self.order_ids[order_id].size - size
+        delta = self.order_ids[order_id].size - updated_size
         try:
-            self.order_ids[order_id].size = size
+            self.order_ids[order_id].size = updated_size
             order_price = self.order_ids[order_id].price
             # updated order will be put at the front of the list
             self.limit_levels[order_price].set_head(self.order_ids[order_id])

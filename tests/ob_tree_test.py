@@ -24,10 +24,10 @@ def lobtree_instance():
 def orderll_instance():
     return OrderLinkedlist()
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def single_order_instance_factory(**kwargs):
     def _single_order(**kwargs):
-        return Order(**kwargs)
+        return Order(order_type = 'limit', side = 'bid', **kwargs)
     return _single_order
 
 @pytest.fixture()
@@ -36,21 +36,20 @@ def order_instances_factory():
     Pytest factory function that randomly generate Order instances 
     Mainly used for filling the orderbook
     '''
-    price = random.randint(10000, 10100)
-    id = random.randint(100000,999999)
-    order_type = 'limit'
-    timestamp = time.time()
-    size = round(random.uniform(0.5, 2.5), 4)
-    side = ['bid', 'ask'][random.randrange(2)]
-    def _orders():
+    def _orders(id):
+        price = random.randint(10000, 10100)
+        order_type = 'limit'
+        timestamp = time.time()
+        size = round(random.uniform(0.5, 2.5), 4)
+        side = ['bid', 'ask'][random.randrange(2)]
         return Order(price=price, id=id, order_type=order_type, timestamp=timestamp, size=size, side=side)
     return _orders
 
 def test_insert_order_function(lobtree_instance, single_order_instance_factory):
-    lobtree_instance.insert_order(single_order_instance_factory(price=10000, id=101011, order_type='limit', timestamp=time.time(), size=1000, side='bid'))
-    lobtree_instance.insert_order(single_order_instance_factory(price=10002, id=101012, order_type='limit', timestamp=time.time(), size=1000, side='bid'))
-    lobtree_instance.insert_order(single_order_instance_factory(price=10001, id=101013, order_type='limit', timestamp=time.time(), size=1000, side='bid'))
-    lobtree_instance.insert_order(single_order_instance_factory(price=10001, id=101014, order_type='limit', timestamp=time.time(), size=1000, side='bid'))
+    lobtree_instance.insert_order(single_order_instance_factory(price=10000, id=101011,  timestamp=time.time(), size=1000, ))
+    lobtree_instance.insert_order(single_order_instance_factory(price=10002, id=101012,  timestamp=time.time(), size=1000, ))
+    lobtree_instance.insert_order(single_order_instance_factory(price=10001, id=101013,  timestamp=time.time(), size=1000, ))
+    lobtree_instance.insert_order(single_order_instance_factory(price=10001, id=101014,  timestamp=time.time(), size=1000, ))
     # test tree levels
     assert lobtree_instance.price_tree[10001] == 2
     # test limit_level 
@@ -64,7 +63,7 @@ def test_insert_order_function(lobtree_instance, single_order_instance_factory):
     assert lobtree_instance.max_price == 10002
     assert lobtree_instance.min_price == 10000
     with pytest.raises(ValueError):
-        lobtree_instance.insert_order(single_order_instance_factory(price=10010, id=101011, order_type='limit', timestamp=time.time(), size=1000, side='bid'))
+        lobtree_instance.insert_order(single_order_instance_factory(price=10010, id=101011,  timestamp=time.time(), size=1000,))
     assert lobtree_instance.order_ids[101011].price == 10000
 
 
@@ -87,6 +86,21 @@ def test_remove_order_function(lobtree_instance):
     assert lobtree_instance.min_price == 10000
     assert 10002 not in lobtree_instance.price_tree
     assert 10002 not in lobtree_instance.limit_levels
+
+def test_process_limit_order(lob_instance, order_instances_factory):
+    '''
+    Randomly prefill the ordrebook with 100 orders
+    '''
+    # generating 100 unique id numbers
+    id = random.sample(range(100000,999999), 100)
+    for i in range(100):
+        lob_instance.process_order(order_instances_factory(id[i]))
+    for level in lob_instance.ask.limit_levels:
+        assert level in lob_instance.ask.price_tree
+
+def test_market_order(lobtree_instance, order_instances_factory):
+    pass
+
 
 # def test_process_order(lob_instance, order_instance):
 #     '''

@@ -99,21 +99,27 @@ class LimitOrderBook:
         if market order's side is 'bid', match it against the ask book, else match it against the bid book
         '''
         if order.order_type == 'limit':
-            if order.is_bid:
-                if order.id in self.bid.order_ids:
-                    self.update_order(order)
+            if order.is_bid():
+                if order.id not in self.bid.order_ids:
+                    self.bid.insert_order(order)
                 else:
-                    self.update_order(order.id, 'bid')
+                    raise ValueError('Order already in the list, please use "update" order')
             else:
-                if order.id in self.ask.order_ids:
-                    self.update_order(order.id, 'ask')
-                else:
+                if order.id not in self.ask.order_ids:
                     self.ask.insert_order(order)
+                else:
+                    raise ValueError('Order already in the list, please use "update" order')
         elif order.order_type == 'market':
             if order.is_bid:
                 self.ask.market_order(order)
             else:
                 self.bid.market_order(order)
+        elif order.order_type == 'update':
+            if order.is_bid:
+                self.update_order(order.id, 'bid')
+            else:
+                self.update_order(order.id, 'ask')
+
     
     def update_order(self, order_id: int, side: str):
         '''

@@ -57,6 +57,10 @@ class LOBTree:
             Will be used as limit order submission
         :return: None
         '''
+        if order.id in self.order_ids:
+            raise ValueError('order already exists in the book')
+            return
+        
         if order.price not in self.limit_levels:
             new_price_level = OrderLinkedlist()
             self.price_tree[order.price] = 1

@@ -126,7 +126,7 @@ class Coinbase(Feed):
             side = ASK if msg['side'] == 'sell' else BID
             size = Decimal(msg['size'])
             maker_order_id = msg['maker_order_id']
-
+            breakpoint()
             _, new_size = self.order_map[maker_order_id]
             new_size -= size
             if new_size <= 0:
@@ -202,6 +202,7 @@ class Coinbase(Feed):
 
         results = []
         for url in urls:
+            # getting whole book on a initial request
             ret = await self.http_conn.read(url)
             results.append(ret)
             # rate limit - 3 per second
@@ -214,6 +215,9 @@ class Coinbase(Feed):
             self.l3_book[npair] = {BID: sd(), ASK: sd()}
             self.seq_no[npair] = orders['sequence']
             for side in (BID, ASK):
+            # orders:
+                # {'bid':['36805.81', '0.03757999', '3b69b4e9-12f0-4a8a-b97f-66f6253db226']}                    
+                # {'ask':['36805.82', '0.008421', 'e1bf1be9-c323-40ca-97db-87d239ff8a96']}
                 for price, size, order_id in orders[side + 's']:
                     price = Decimal(price)
                     size = Decimal(size)
@@ -221,7 +225,13 @@ class Coinbase(Feed):
                         self.l3_book[npair][side][price][order_id] = size
                     else:
                         self.l3_book[npair][side][price] = {order_id: size}
+                    #  self.l3_book   
+                        # 'bids': {Decimal('36804.93'): {'f0ad3603-cafc-484a-bac5-6fde4c12cedf': Decimal('0.09719021'), 'c2061f36-11fd-4d77-a315-2398021930c6': Decimal('2.97219063')}}
+                        # 'asks': {Decimal('36804.93'): {'f0ad3603-cafc-484a-bac5-6fde4c12cedf': Decimal('0.09719021'), 'c2061f36-11fd-4d77-a315-2398021930c6': Decimal('2.97219063')}}
                     self.order_map[order_id] = (price, size)
+                    # self.order_map:
+                        # '07e01fbf-448c-4544-9547-7f531ce86351': (Decimal('1000000000'), Decimal('0.001'))
+            # def book_callback(self, book: dict, book_type: str, symbol: str, forced: bool, delta: dict, timestamp: float, receipt_timestamp: float):
             await self.book_callback(self.l3_book[npair], L3_BOOK, npair, True, None, timestamp, timestamp)
 
     async def _open(self, msg: dict, timestamp: float):
@@ -341,7 +351,7 @@ class Coinbase(Feed):
                     return
 
                 self.seq_no[pair] = msg['sequence']
-        breakpoint()
+        breakpoint() 
         if 'type' in msg:
             if msg['type'] == 'ticker':
                 await self._ticker(msg, timestamp)
@@ -377,7 +387,6 @@ class Coinbase(Feed):
                                          "product_ids": self.subscription[chan],
                                          "channels": [chan]
                                          }))
-
         chan = feed_to_exchange(self.id, L3_BOOK)
         if chan in self.subscription:
             await self._book_snapshot(self.subscription[chan])

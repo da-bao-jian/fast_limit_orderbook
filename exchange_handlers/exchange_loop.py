@@ -128,8 +128,10 @@ class ExchangeLoops:
 if __name__ == '__main__':
     f = ExchangeLoops()
     async def book(feed, symbol, book, timestamp, receipt_timestamp):
-        print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Snapshot: {book}')
+        # print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Snapshot: {book}')
+        pass
     async def delta(feed, symbol, delta, timestamp, receipt_timestamp):
-        print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Delta: {delta}')
+        # print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Delta: {delta}')
+        pass
     f.add_loop(Coinbase(symbols=['BTC-USD'], channels=[L3_BOOK], callbacks={BOOK_DELTA: delta, L3_BOOK: book}))
     f.start_loops()

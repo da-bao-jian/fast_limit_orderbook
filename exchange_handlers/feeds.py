@@ -2,7 +2,7 @@
 based on cryptofeed https://github.com/bmoscon/cryptofeed/feed.py
 '''
 from .symbols_parser import Symbols
-from .util import book_delta
+from .util import book_delta, depth
 import asyncio
 from collections import defaultdict
 import logging
@@ -47,14 +47,16 @@ class Feed:
         '''
         self.subscriptions = defaultdict(set) 
         self.address = address
-        self.do_deltas = False
+        self.do_deltas = True
         self.snapshot_interval = snapshot_interval
         self.max_depth = max_depth
         self.cross_check = cross_check
         self.connections = []
+        self.updates = defaultdict(int)
         # ping_pong is used as websockets.connect argument in WSAsyncConn class
         self.ping_pong = {'ping_interval': 10, 'ping_timeout': None, 'max_size': 2**23, 'max_queue': None}
         self.retries = retries
+        self.previous_book = defaultdict(dict)
 
         symbols_cache = Symbols
         if not symbols_cache.populated(self.id):
@@ -78,11 +80,13 @@ class Feed:
             FUNDING: None,
             L2_BOOK: None,
             L3_BOOK: None,
-            OPEN_INTEREST: None
+            OPEN_INTEREST: None,
         }
         self.http_conn = HTTPAsyncConn(self.id) 
         for cb_type, cb_func in callbacks.items():
             self.callbacks[cb_type] = cb_func
+            if cb_type == BOOK_DELTA:
+                self.do_deltas = True
         for key, callback in self.callbacks.items():
             if not isinstance(callback, list):
                 self.callbacks[key] = [callback]
@@ -112,11 +116,6 @@ class Feed:
     
     async def book_callback(self, book: dict, book_type: str, symbol: str, forced: bool, delta: dict, timestamp: float, receipt_timestamp: float):
         """
-        ** for the purpose of BST implementation, it doesn't matter what to put into the Feed() args, it should only needs to handle the
-        update in the exchange specific class, for reference check out the FTX class' book method's update portion
-
-
-
         Three cases we need to handle here
 
         1.  Book deltas are enabled (application of max depth here is trivial)
@@ -172,9 +171,21 @@ class Feed:
         if book_type == L2_BOOK:
             await self.callback(L2_BOOK, feed=self.id, symbol=symbol, book=book, timestamp=timestamp, receipt_timestamp=receipt_timestamp)
             # await self.callback(BOOK_DELTA, feed=self.id, symbol=symbol, delta=delta, timestamp=timestamp, receipt_timestamp=receipt_timestamp)
-        else:
+        else: # else L3
             await self.callback(L3_BOOK, feed=self.id, symbol=symbol, book=book, timestamp=timestamp, receipt_timestamp=receipt_timestamp)
         self.updates[symbol] = 0
+
+    async def apply_depth(self, book: dict, do_delta: bool, symbol: str):
+        ret = depth(book, self.max_depth)
+        # if L3_BOOK
+        if not do_delta:
+            delta = self.previous_book[symbol] != ret
+            self.previous_book[symbol] = ret
+            return delta, ret
+        # book delta imported from util to process the delta and book update
+        delta = book_delta(self.previous_book[symbol], ret)
+        self.previous_book[symbol] = ret
+        return delta, ret
 
     def exchange_symbol_to_std_symbol(self, symbol: str):
         try:

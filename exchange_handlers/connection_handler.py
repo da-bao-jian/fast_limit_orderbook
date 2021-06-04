@@ -1,5 +1,5 @@
 '''
-Copied from cryptofeed https://github.com/bmoscon/cryptofeed/connection_handler.py
+copied from cryptofeed https://github.com/bmoscon/cryptofeed/connection_handler.py
 '''
 import asyncio
 import logging

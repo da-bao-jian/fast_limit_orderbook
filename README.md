@@ -2,6 +2,11 @@
 
 Orderbook Simulator that supports limit and market orders
 
+To run the test, 
+```
+python3 pytest tests/ob_tree_test.py
+```
+
 ## Data Structure
 Orderbook data strucuture is based on WK Selph's Blogpost on ["How to Build a Fast Limit Order Book"](https://web.archive.org/web/20110219163448/http://howtohft.wordpress.com/2011/02/15/how-to-build-a-fast-limit-order-book/):
 

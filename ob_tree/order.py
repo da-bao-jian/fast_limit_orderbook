@@ -8,7 +8,7 @@ class Order:
         # if market order, then it adds no depth to the book
         if self.order_type == 'market':
             self.price = None
-            self.volume=0
+            self.volume = 0
         else:
             self.price = price
             self.volume = self.size * self.price

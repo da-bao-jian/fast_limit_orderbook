@@ -13,6 +13,7 @@ import logging
 
 LOG = logging.getLogger(__name__)
 
+
 class LOBTree:
 
     def __init__(self):
@@ -28,7 +29,7 @@ class LOBTree:
         '''
         # tree that store price as keys and number of orders on that level as values
         self.price_tree = FastRBTree()
-        self.max_price = None  
+        self.max_price = None
         self.min_price = None
         self.limit_levels = {}
         self.order_ids = {}
@@ -36,11 +37,11 @@ class LOBTree:
     @property
     def max(self):
         return self.max_price
-    
+
     @property
     def min(self):
         return self.min_price
-    
+
     def _get_price(self, price):
         '''
         price: int 
@@ -60,8 +61,7 @@ class LOBTree:
         if order.id in self.order_ids:
             raise ValueError('order already exists in the book')
             return
-        
-        
+
         if order.price not in self.limit_levels:
             new_price_level = OrderLinkedlist()
             self.price_tree[order.price] = 1
@@ -72,7 +72,7 @@ class LOBTree:
             if self.max_price is None or order.price > self.max_price:
                 self.max_price = order.price
             if self.min_price is None or order.price < self.min_price:
-                self.min_price  = order.price 
+                self.min_price = order.price
         else:
             self.limit_levels[order.price].set_head(order)
             self.limit_levels[order.price].size += order.size
@@ -95,7 +95,6 @@ class LOBTree:
             self.limit_levels[order_price].size -= delta
         except Exception as e:
             LOG.info('Order is not in the book')
-
 
     def remove_order(self, order_id: int):
         '''
@@ -125,13 +124,12 @@ class LOBTree:
             try:
                 self.max_price = self.price_tree.max_key()
             except KeyError or ValueError:
-                self.max_price = None 
+                self.max_price = None
         if self.min_price == price:
             try:
                 self.min_price = self.price_tree.min_key()
             except KeyError or ValueError:
                 self.min_price = None
-
 
     def market_order(self, order: Order):
         '''
@@ -140,15 +138,16 @@ class LOBTree:
         if len(self.limit_levels) == 0:
             raise ValueError('No orders in the book')
             return
-        
+
         if order.is_bid:
             best_price = self.min_price
             while order.size > 0 and best_price != None:
                 price_level = self._get_price(best_price)
-                order.size, number_of_orders_deleted = price_level._consume_orders(order, self.order_ids)
+                order.size, number_of_orders_deleted = price_level._consume_orders(
+                    order, self.order_ids)
                 self.price_tree[best_price] -= number_of_orders_deleted
                 if price_level._head == None:
-                       self._remove_price_level(best_price)
+                    self._remove_price_level(best_price)
                 best_price = self.min_price
             if order.size != 0:
                 LOG.warning('no more limit orders in the bid book')
@@ -156,14 +155,15 @@ class LOBTree:
             best_price = self.max_price
             while order.size > 0 and best_price != None:
                 price_level = self._get_price(best_price)
-                order.size, number_of_orders_deleted = price_level._consume_orders(order, self.order_ids)
+                order.size, number_of_orders_deleted = price_level._consume_orders(
+                    order, self.order_ids)
                 self.price_tree[best_price] -= number_of_orders_deleted
                 if price_level._head == None:
                     self._remove_price_level(best_price)
                 best_price = self.max_price
             if order.size != 0:
                 LOG.warning('no more orders in the ask book')
-    
+
     def level_with_most_orders(self, range: int):
         '''
         range: int

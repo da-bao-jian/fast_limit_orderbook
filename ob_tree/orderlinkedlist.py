@@ -16,10 +16,10 @@ class OrderLinkedlist:
         '''
         if self._head is None:
             self._head = order
-            self._tail= order
+            self._tail = order
             return
         self.insert_before(self._head, order)
-		
+
     def set_tail(self, order):
         '''
         order: Order Instance
@@ -29,7 +29,7 @@ class OrderLinkedlist:
         '''
         if self._tail is None:
             self._head = order
-            self._tail= order
+            self._tail = order
             return
         self.insert_after(self._tail, order)
 
@@ -43,17 +43,17 @@ class OrderLinkedlist:
         if order_to_insert == self._head and order_to_insert == self._tail:
             return
         self.remove(order_to_insert, decrement=False)
-        if order != self._head:			
-            order_to_insert = order.prev			
+        if order != self._head:
+            order_to_insert = order.prev
             order_to_insert = order
             order.prev.next = order_to_insert
             order.prev = order_to_insert
-        else:			
-            order_to_insert.prev = order.prev			
+        else:
+            order_to_insert.prev = order.prev
             order_to_insert.next = order
             self._head = order_to_insert
             order.prev = order_to_insert
-		
+
     def insert_after(self, order, order_to_insert):
         '''
         order: Order Instance
@@ -64,17 +64,17 @@ class OrderLinkedlist:
         if order_to_insert == self._head and order_to_insert == self._tail:
             return
         self.remove(order_to_insert, decrement=False)
-        if order != self._tail:			
-            order_to_insert.prev = order			
+        if order != self._tail:
+            order_to_insert.prev = order
             order_to_insert.next = order.next
             order.next.prev = order_to_insert
             order.next = order_to_insert
-        else:			
-            order_to_insert.prev = order			
+        else:
+            order_to_insert.prev = order
             order_to_insert.next = order.next
             self._tail = order_to_insert
             order.next = order_to_insert
-			
+
     def insert_at_position(self, position, order_to_insert):
         '''
         position: int 
@@ -95,7 +95,6 @@ class OrderLinkedlist:
             self.set_tail(order_to_insert)
         else:
             self.insert_before(order, order_to_insert)
-			
 
     def remove_order_with_value(self, value):
         '''
@@ -105,13 +104,12 @@ class OrderLinkedlist:
         '''
         order = self._head
         while order is not None:
-            temp_node = order					
-            order = order.next 
+            temp_node = order
+            order = order.next
             if temp_node.value == value:
                 self.remove(temp_node)
 
-
-    def remove(self, order, decrement: bool=True):
+    def remove(self, order, decrement: bool = True):
         '''
         order: Order Instance
         decrement: bool
@@ -123,7 +121,7 @@ class OrderLinkedlist:
             self._head = self._head.next
         if order == self._tail:
             self._tail = self._tail.prev
-        if order.prev is not None: 
+        if order.prev is not None:
             order.prev.next = order.next
         if order.next is not None:
             order.next.prev = order.prev
@@ -143,7 +141,7 @@ class OrderLinkedlist:
         while order is not None and order.value != value:
             order = order.next
         return order is not None
-	
+
     def _consume_orders(self, order, order_ids):
         '''
         order: Order Instance
@@ -177,4 +175,3 @@ class OrderLinkedlist:
                 self.remove(self._tail)
                 number_of_orders_deleted += 1
         return order.size, number_of_orders_deleted
-

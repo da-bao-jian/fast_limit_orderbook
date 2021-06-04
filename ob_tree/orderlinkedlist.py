@@ -144,7 +144,7 @@ class OrderLinkedlist:
             order = order.next
         return order is not None
 	
-    def consume_orders(self, order, order_ids):
+    def _consume_orders(self, order, order_ids):
         '''
         order: Order Instance
         order_ids: dict | LOBTree.order_ids
@@ -155,19 +155,26 @@ class OrderLinkedlist:
                 2) tail order size is smaller than the order and order size is smaller than price level total size
                     => keep taking the orders on this level until order.size is 0, decrease and delete the order from order_ids 
                 3) order size is larger than all of the orders on this level => return order.size after deducting the order executed 
+        :return: int, int
         '''
+        # keeps a track of number of orders deleted to update the LOBTree.price_tree
+        number_of_orders_deleted = 0
         while order.size > 0 and self.size > 0:
             # respecting time priority principle, orders on the same level follows FIFO design
             # since we add new orders at the head, we take orders out at the tail
             if self._tail.size >= order.size:
                 self._tail.size -= order.size
+                self.size -= order.size
                 if self._tail.size == 0:
                     del order_ids[self._tail.id]
+                    self.remove(self._tail)
+                    number_of_orders_deleted += 1
                 order.size = 0
-                return order.size
+                return order.size, number_of_orders_deleted
             else:
                 order.size -= self._tail.size
                 del order_ids[self._tail.id]
                 self.remove(self._tail)
-        return order.size
+                number_of_orders_deleted += 1
+        return order.size, number_of_orders_deleted
 

@@ -27,7 +27,7 @@ def orderll_instance():
 @pytest.fixture
 def single_order_instance_factory(**kwargs):
     def _single_order(**kwargs):
-        return Order(order_type = 'limit', side = 'bid', **kwargs)
+        return Order(**kwargs)
     return _single_order
 
 @pytest.fixture()
@@ -46,10 +46,10 @@ def order_instances_factory():
     return _orders
 
 def test_insert_order_function(lobtree_instance, single_order_instance_factory):
-    lobtree_instance.insert_order(single_order_instance_factory(price=10000, id=101011,  timestamp=time.time(), size=1000, ))
-    lobtree_instance.insert_order(single_order_instance_factory(price=10002, id=101012,  timestamp=time.time(), size=1000, ))
-    lobtree_instance.insert_order(single_order_instance_factory(price=10001, id=101013,  timestamp=time.time(), size=1000, ))
-    lobtree_instance.insert_order(single_order_instance_factory(price=10001, id=101014,  timestamp=time.time(), size=1000, ))
+    lobtree_instance.insert_order(single_order_instance_factory(price=10000, id=101011, order_type = 'limit', side = 'bid',  timestamp=time.time(), size=1000, ))
+    lobtree_instance.insert_order(single_order_instance_factory(price=10002, id=101012, order_type = 'limit', side = 'bid',  timestamp=time.time(), size=1000, ))
+    lobtree_instance.insert_order(single_order_instance_factory(price=10001, id=101013,  order_type = 'limit', side = 'bid', timestamp=time.time(), size=1000, ))
+    lobtree_instance.insert_order(single_order_instance_factory(price=10001, id=101014, order_type = 'limit', side = 'bid',  timestamp=time.time(), size=1000, ))
     # test tree levels
     assert lobtree_instance.price_tree[10001] == 2
     # test limit_level 
@@ -63,7 +63,7 @@ def test_insert_order_function(lobtree_instance, single_order_instance_factory):
     assert lobtree_instance.max_price == 10002
     assert lobtree_instance.min_price == 10000
     with pytest.raises(ValueError):
-        lobtree_instance.insert_order(single_order_instance_factory(price=10010, id=101011,  timestamp=time.time(), size=1000,))
+        lobtree_instance.insert_order(single_order_instance_factory(price=10010, id=101011, order_type = 'limit', side = 'bid', timestamp=time.time(), size=1000,))
     assert lobtree_instance.order_ids[101011].price == 10000
 
 
@@ -139,17 +139,54 @@ def test_update_order(lob_instance):
         assert 20000 not in lob_instance.ask.limit_levels
         assert lob_instance.ask.limit_levels[new_price_level]._head.id == order_need_update.id
 
-    
-
-def test_market_order(lobtree_instance, order_instances_factory):
-    pass
-
-
-# def test_process_order(lob_instance, order_instance):
-#     '''
-#     Test processing a single order           
-#     '''
-#     lob_instance.process_order(order_instance)
-#     assert isinstance(lob_instance.bid.limit_levels[order_instance.price], OrderLinkedlist) 
-#     assert lob_instance.bid.order_ids[order_instance.id] == order_instance.id
-#     assert lob_instance.bid.limit_levels[order_instance.price].volume == 1.2
+def test_market_order(lob_instance, single_order_instance_factory):
+    '''
+    Three scenarios:
+        1) best limit level tail order size is larger than the market order size => reduce the limit order size accordingly;
+        2) best limit level tail order size is smaller than the market order size, but there are enough orders on the same level to 
+            meet market order's size => keep moving toward the head until market order is fully executed
+        3) best limit level tail order size is smaller than the market order size and there aren't enough orders on the same level to 
+            meet market order's size => delete the best limit order level, move the second best level to the best
+            and continue this process until market order is fully executed;
+    * there's a fourth scenario: market order eats up all the liquidity on the book. This is exetremely unlikely in real world, therefore not tested here
+    '''
+    # 1)
+    lob_instance.ask.insert_order(single_order_instance_factory(price=9999, id=111014, order_type= 'limit',side='ask', timestamp=time.time(), size=1000))
+    lob_instance.process_order(single_order_instance_factory(price =None, id=111011, order_type='market', side='bid', timestamp=time.time(), size=333))
+    # if order size == market order size
+    assert lob_instance.ask.limit_levels[9999].size == 1000 - 333
+    lob_instance.ask.insert_order(single_order_instance_factory(price=9998, id=111015, order_type= 'limit',side='ask', timestamp=time.time(), size=333))
+    lob_instance.process_order(single_order_instance_factory(price =None, id=111011, order_type='market', side='bid', timestamp=time.time(), size=333))
+    assert 9998 not in lob_instance.ask.limit_levels
+    assert 9998 not in lob_instance.ask.price_tree
+    assert 111015 not in lob_instance.ask.order_ids
+    #2) order id 111014 should still be in the ask book with size equals to 1000-333
+    lob_instance.ask.insert_order(single_order_instance_factory(price=9999.5, id=111015, order_type= 'limit',side='ask', timestamp=time.time(), size=1000))
+    lob_instance.process_order(single_order_instance_factory(price =None, id=111011, order_type='market', side='bid', timestamp=time.time(), size=1000))
+    assert 111014 not in lob_instance.ask.order_ids
+    assert 9999 not in lob_instance.ask.limit_levels
+    assert 9999 not in lob_instance.ask.price_tree
+    assert lob_instance.ask.price_tree[9999.5] == 1
+    assert lob_instance.ask.limit_levels[9999.5].size == 1000 - (1000 - (1000 - 333))
+    assert 9999.5 in lob_instance.ask.limit_levels
+    assert 9999.5 in lob_instance.ask.price_tree
+    assert lob_instance.ask.limit_levels[9999.5]._head.id == 111015
+    lob_instance.ask.insert_order(single_order_instance_factory(price=9999.5, id=111016, order_type= 'limit',side='ask', timestamp=time.time(), size=1))
+    assert lob_instance.ask.price_tree[9999.5] == 2
+    #3) 
+    lob_instance.ask.insert_order(single_order_instance_factory(price=9999, id=111014, order_type= 'limit',side='ask', timestamp=time.time(), size=1))
+    lob_instance.ask.insert_order(single_order_instance_factory(price=9998, id=111017, order_type= 'limit',side='ask', timestamp=time.time(), size=1))
+    lob_instance.ask.insert_order(single_order_instance_factory(price=9998, id=111018, order_type= 'limit',side='ask', timestamp=time.time(), size=1))
+    lob_instance.ask.insert_order(single_order_instance_factory(price=9997, id=111019, order_type= 'limit',side='ask', timestamp=time.time(), size=1))
+    lob_instance.process_order(single_order_instance_factory(price =None, id=111011, order_type='market', side='bid', timestamp=time.time(), size=2))
+    assert 9997 not in lob_instance.ask.limit_levels
+    assert 9998 in lob_instance.ask.limit_levels
+    assert lob_instance.ask.price_tree[9998] == 1
+    assert 111017 not in lob_instance.ask.order_ids
+    assert 111019 not in lob_instance.ask.order_ids
+    assert lob_instance.ask.limit_levels[9998]._head.id == 111018
+    lob_instance.process_order(single_order_instance_factory(price =None, id=111011, order_type='market', side='bid', timestamp=time.time(), size=1.5))
+    assert 9998 not in lob_instance.ask.limit_levels
+    assert 9998 not in lob_instance.ask.price_tree
+    assert 111018 not in lob_instance.ask.order_ids
+    assert lob_instance.ask.limit_levels[9999].size == 0.5

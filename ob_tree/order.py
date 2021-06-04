@@ -8,11 +8,12 @@ class Order:
         # if market order, then it adds no depth to the book
         if self.order_type == 'market':
             self.price = None
+            self.volume=0
         else:
             self.price = price
+            self.volume = self.size * self.price
         self.prev = None
         self.next = None
-        self.volume = self.size * self.price
 
     def is_bid(self):
         '''

@@ -145,8 +145,9 @@ class LOBTree:
             best_price = self.min_price
             while order.size > 0 and best_price != None:
                 price_level = self._get_price(best_price)
-                order.size = price_level.consume_orders(order, self.order_ids)
-                if self.limit_levels[price_level].size == 0:
+                order.size, number_of_orders_deleted = price_level._consume_orders(order, self.order_ids)
+                self.price_tree[best_price] -= number_of_orders_deleted
+                if price_level._head == None:
                        self._remove_price_level(best_price)
                 best_price = self.min_price
             if order.size != 0:
@@ -155,9 +156,10 @@ class LOBTree:
             best_price = self.max_price
             while order.size > 0 and best_price != None:
                 price_level = self._get_price(best_price)
-                order.size = price_level.consume_orders(order, self.order_ids)
-                if self.limit_levels[price_level].size == 0:
-                       self._remove_price_level(best_price)
+                order.size, number_of_orders_deleted = price_level._consume_orders(order, self.order_ids)
+                self.price_tree[best_price] -= number_of_orders_deleted
+                if price_level._head == None:
+                    self._remove_price_level(best_price)
                 best_price = self.max_price
             if order.size != 0:
                 LOG.warning('no more orders in the ask book')

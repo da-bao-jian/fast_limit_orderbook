@@ -1,3 +1,6 @@
+'''
+copied from https://github.com/bmoscon/cryptofeed/blob/master/cryptofeed/exchange/coinbase.py
+'''
 import asyncio
 from ..feeds import Feed
 from ..defines import COINBASE
@@ -338,7 +341,7 @@ class Coinbase(Feed):
                     return
 
                 self.seq_no[pair] = msg['sequence']
-
+        breakpoint()
         if 'type' in msg:
             if msg['type'] == 'ticker':
                 await self._ticker(msg, timestamp)

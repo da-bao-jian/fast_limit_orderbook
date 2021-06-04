@@ -7,7 +7,7 @@ import time
 from .exchanges.bybit import Bybit
 from .exchanges.coinbase import Coinbase
 from .exchanges.ftx import FTX
-from .defines import L2_BOOK, BOOK_DELTA
+from .defines import L3_BOOK, BOOK_DELTA
 
 mapping = {
     FTX:FTX,
@@ -131,5 +131,5 @@ if __name__ == '__main__':
         print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Snapshot: {book}')
     async def delta(feed, symbol, delta, timestamp, receipt_timestamp):
         print(f'Timestamp: {timestamp} Receipt Timestamp: {receipt_timestamp} Feed: {feed} Pair: {symbol} Delta: {delta}')
-    f.add_loop(Coinbase(symbols=['BTC-USD'], channels=[L2_BOOK], callbacks={BOOK_DELTA: delta, L2_BOOK: book}))
+    f.add_loop(Coinbase(symbols=['BTC-USD'], channels=[L3_BOOK], callbacks={BOOK_DELTA: delta, L3_BOOK: book}))
     f.start_loops()

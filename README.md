@@ -2,6 +2,11 @@
 
 Orderbook Simulator that supports limit and market orders
 
+This algorithm runs Python 3.9+. If you have pipenv, install it by 
+```
+pipenv install
+```
+
 To run the test, 
 ```
 python3 pytest tests/ob_tree_test.py

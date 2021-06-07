@@ -1,5 +1,7 @@
 # Fast Limit Order Book Simulator
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9fb9226023cb4f73b00a2bdbe9ff09ef)](https://app.codacy.com/gh/dabaojian1992/fast_limit_orderbook?utm_source=github.com&utm_medium=referral&utm_content=dabaojian1992/fast_limit_orderbook&utm_campaign=Badge_Grade_Settings)
+
 Orderbook Simulator that supports limit and market orders
 
 This algorithm runs Python 3.9+. If you have pipenv, install it by 

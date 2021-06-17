@@ -9,7 +9,7 @@ This algorithm runs Python 3.9+. If you have pipenv, install it by
 pipenv install
 ```
 
-To run the test, 
+To run the test, go to the project's root directory and run
 ```
 python3 pytest tests/ob_tree_test.py
 ```

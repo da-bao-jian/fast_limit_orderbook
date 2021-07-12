@@ -1,6 +1,6 @@
 # Fast Limit Order Book Simulator
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/65e36ac1751347aabe07dcad58f51bb6)](https://www.codacy.com/gh/dabaojian1992/fast_limit_orderbook/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dabaojian1992/fast_limit_orderbook&amp;utm_campaign=Badge_Grade)
+
 
 Orderbook Simulator that supports limit and market orders
 

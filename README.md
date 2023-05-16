@@ -1,19 +1,3 @@
-# Fast Limit Order Book Simulator
-
-
-
-Orderbook Simulator that supports limit and market orders
-
-This algorithm runs Python 3.9+. If you have pipenv, install it by 
-```
-pipenv install
-```
-
-To run the test, go to the project's root directory and run
-```
-python3 pytest tests/ob_tree_test.py
-```
-
 ## Data Structure
 Orderbook data strucuture is based on WK Selph's Blogpost on ["How to Build a Fast Limit Order Book"](https://web.archive.org/web/20110219163448/http://howtohft.wordpress.com/2011/02/15/how-to-build-a-fast-limit-order-book/):
 
